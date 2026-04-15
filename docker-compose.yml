@@ -1,0 +1,69 @@
+# version: "3.9"
+
+# ─────────────────────────────────────────────────────────────
+#  VideoForge — Universal Video Generation Platform
+#  Database: your LOCAL PostgreSQL (no DB container)
+#
+#  Before running:
+#    1. Make sure your local PostgreSQL is running on port 5432
+#    2. Create the database:  createdb video_generate
+#    3. Run the schema: psql -U postgres -d video_generate -f database_schema.sql
+#    4. Set DATABASE_URL in .env to point to host machine:
+#
+#       On Linux/Windows:
+#         DATABASE_URL=postgresql+asyncpg://USER:PASS@host-gateway:5432/video_generate
+#
+#       On macOS (Docker Desktop):
+#         DATABASE_URL=postgresql+asyncpg://USER:PASS@host.docker.internal:5432/video_generate
+#
+#    5. Run:  docker-compose up -d
+# ─────────────────────────────────────────────────────────────
+
+services:
+  # ── FastAPI Backend ─────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: videoforge_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@host.docker.internal:5432/video_generate
+      PYTHONPATH: /app
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+      - ./dashboard:/app/dashboard
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
+
+  # ── APScheduler Daemon ──────────────────────────
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: videoforge_scheduler
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@host.docker.internal:5432/video_generate
+      PYTHONPATH: /app
+    volumes:
+      - ./backend:/app
+      - ./scheduler:/app/scheduler
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+    working_dir: /app
+    command: python scheduler/scheduler.py
+    depends_on:
+      api:
+        condition: service_healthy

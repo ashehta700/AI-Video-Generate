@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+env/
+.venv/
+venv/
+
+# Environment variables
+.env
+.env.*
+
+# Logs and runtime files
+logs/
+*.log
+
+# Storage and generated media
+storage/
+screen shots/
+
+# Ignore large archive and local secrets
+*.rar
+client_secret.json
+
+# Docker
+*.env
+docker-compose.override.yml
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Other
+.DS_Store
+Thumbs.db
