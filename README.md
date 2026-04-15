@@ -1,4 +1,4 @@
-# Arabic News Automation — Universal Video Generation for YouTube
+# Universal Video Generation for YouTube
 
 This repository contains a complete automation platform for generating Arabic news videos. It combines scraping, audio transcription, translation, text-to-speech, video composition, thumbnail creation, metadata generation, and optional YouTube upload.
 
